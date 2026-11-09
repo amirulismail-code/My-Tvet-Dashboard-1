@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MY TVET Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header ── */
+    header {
+      max-width: 1000px;
+      margin: 0 auto 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .header-left h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+    .header-left p {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-top: 3px;
+    }
+    #clock {
+      font-size: 0.82rem;
+      color: #64748b;
+      text-align: right;
+      line-height: 1.7;
+    }
+
+    /* ── Stat Cards ── */
+    .stat-row {
+      max-width: 1000px;
+      margin: 0 auto 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 620px) { .stat-row { grid-template-columns: 1fr; } }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .stat-icon {
+      width: 50px; height: 50px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .stat-icon.blue   { background: #dbeafe; }
+    .stat-icon.violet { background: #ede9fe; }
+    .stat-icon.amber  { background: #fef3c7; }
+    .stat-icon.green  { background: #dcfce7; }
+    .stat-icon.red    { background: #fee2e2; }
+
+    .stat-info { flex: 1; min-width: 0; }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.15;
+      margin: 2px 0 3px;
+    }
+    .stat-sub { font-size: 0.75rem; color: #94a3b8; }
+
+    /* ── Main Grid ── */
+    .main-grid {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 650px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .widget-full { grid-column: 1 / -1; }
+
+    /* ── Widget ── */
+    .widget {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .widget-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .widget-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* ── Input / Button ── */
+    .input-row { display: flex; gap: 8px; }
+    input[type="text"] {
+      flex: 1;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      padding: 7px 11px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: #1e293b;
+      background: #f8fafc;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input[type="text"]:focus { border-color: #3b82f6; background: #fff; }
+
+    .btn {
+      padding: 7px 15px;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-sm {
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.95rem;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .btn-sm:hover { color: #ef4444; background: #fee2e2; }
+
+    /* ── Checklist ── */
+    .check-list { display: flex; flex-direction: column; gap: 6px; }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+      transition: border-color .15s;
+    }
+    .check-item:hover { border-color: #cbd5e1; }
+    .check-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: #3b82f6;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .check-label { flex: 1; transition: color .15s; cursor: pointer; }
+    .check-label.done { text-decoration: line-through; color: #94a3b8; }
+
+    /* ── Progress ── */
+    .progress-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .progress-bar-wrap {
+      background: #e2e8f0;
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #3b82f6;
+      border-radius: 99px;
+      transition: width .4s ease;
+    }
+    .progress-bar-fill.green { background: #10b981; }
+    .progress-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-align: right;
+    }
+
+    /* ── Task list ── */
+    .task-list { display: flex; flex-direction: column; gap: 6px; }
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+    }
+    .task-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: #3b82f6;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .task-label { flex: 1; }
+    .task-label.done { text-decoration: line-through; color: #94a3b8; }
+    .task-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .tag-penting { background: #fee2e2; color: #b91c1c; }
+    .tag-sedang  { background: #fef3c7; color: #92400e; }
+    .tag-biasa   { background: #f1f5f9; color: #64748b; }
+
+    /* ── Workshop ── */
+    .ws-list { display: flex; flex-direction: column; gap: 8px; }
+    .ws-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+    }
+    .ws-left { display: flex; flex-direction: column; gap: 2px; }
+    .ws-name { font-weight: 500; color: #0f172a; }
+    .ws-meta { font-size: 0.75rem; color: #94a3b8; }
+    .ws-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      flex-shrink: 0;
+    }
+    .badge-aktif      { background: #dcfce7; color: #15803d; }
+    .badge-penuh      { background: #fee2e2; color: #b91c1c; }
+    .badge-selenggara { background: #fef9c3; color: #92400e; }
+    .badge-tutup      { background: #f1f5f9; color: #64748b; }
+
+    /* ── Section divider ── */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 0 2px;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    /* ── Divider ── */
+    hr.divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 2px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-left">
+    <h1>🎓 MY TVET Dashboard</h1>
+    <p>Pusat Latihan Kemahiran — Sesi 2025</p>
+  </div>
+  <div id="clock"></div>
+</header>
+
+<!-- ── 3 Stat Cards ── -->
+<div class="stat-row">
+
+  <!-- Kad 1: Pelajar Berdaftar -->
+  <div class="stat-card">
+    <div class="stat-icon blue">👨‍🎓</div>
+    <div class="stat-info">
+      <div class="stat-label">Pelajar Berdaftar</div>
+      <div class="stat-value" id="val-pelajar">48</div>
+      <div class="stat-sub" id="sub-pelajar">Aktif semester ini</div>
+    </div>
+  </div>
+
+  <!-- Kad 2: Tugasan Berbaki -->
+  <div class="stat-card">
+    <div class="stat-icon amber">📋</div>
+    <div class="stat-info">
+      <div class="stat-label">Tugasan Berbaki</div>
+      <div class="stat-value" id="val-tugasan">—</div>
+      <div class="stat-sub" id="sub-tugasan">—</div>
+    </div>
+  </div>
+
+  <!-- Kad 3: Status Bengkel -->
+  <div class="stat-card">
+    <div class="stat-icon green">🏭</div>
+    <div class="stat-info">
+      <div class="stat-label">Bengkel Aktif</div>
+      <div class="stat-value" id="val-bengkel">—</div>
+      <div class="stat-sub" id="sub-bengkel">—</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Main Grid ── -->
+<div class="main-grid">
+
+  <!-- Widget 1: Tugasan Berbaki -->
+  <div class="widget">
+    <div class="widget-title-row">
+      <div class="widget-title">📋 Tugasan Berbaki</div>
+    </div>
+    <div class="input-row">
+      <input type="text" id="task-input" placeholder="Tambah tugasan baru…" />
+      <button class="btn btn-primary" onclick="addTask()">Tambah</button>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="task-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="task-progress-label">0 / 0 selesai</div>
+    </div>
+    <div class="task-list" id="task-list"></div>
+  </div>
+
+  <!-- Widget 2: Status Bengkel -->
+  <div class="widget">
+    <div class="widget-title">🏭 Status Bengkel</div>
+    <div class="ws-list" id="ws-list"></div>
+  </div>
+
+  <!-- Widget 3: Senarai Semak Persediaan (full width) -->
+  <div class="widget widget-full">
+    <div class="widget-title-row">
+      <div class="widget-title">✅ Senarai Semak Persediaan Kerja Amali</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill green" id="check-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="check-progress-label">0 / 0 selesai</div>
+    </div>
+
+    <!-- Fasa: Persediaan -->
+    <div class="section-label">Fasa 1 — Persediaan</div>
+    <div class="check-list" id="check-list-1"></div>
+
+    <hr class="divider" />
+
+    <!-- Fasa: Pelaksanaan -->
+    <div class="section-label">Fasa 2 — Pelaksanaan</div>
+    <div class="check-list" id="check-list-2"></div>
+
+    <hr class="divider" />
+
+    <!-- Fasa: Penilaian & Penutup -->
+    <div class="section-label">Fasa 3 — Penilaian &amp; Penutup</div>
+    <div class="check-list" id="check-list-3"></div>
+  </div>
+
+</div>
+
+<script>
+  /* ── Helpers ── */
+  function get(key, def) { return JSON.parse(localStorage.getItem(key)) ?? def; }
+  function set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /* ── Clock ── */
+  function updateClock() {
+    const now = new Date();
+    const d = now.toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const t = now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('clock').innerHTML = d + '<br>' + t;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ═══════════════════════════════════════
+     TUGASAN BERBAKI
+  ═══════════════════════════════════════ */
+  const TASK_KEY = 'mytvet_tasks';
+
+  const SAMPLE_TASKS = [
+    { id: 1, text: 'Semak laporan kerja amali Kumpulan A', tag: 'penting', done: false },
+    { id: 2, text: 'Kemaskini markah penilaian bengkel', tag: 'penting', done: false },
+    { id: 3, text: 'Sediakan bahan taklimat keselamatan', tag: 'sedang', done: true },
+    { id: 4, text: 'Hantar jadual penilaian kepada penyelaras', tag: 'sedang', done: false },
+    { id: 5, text: 'Cetak borang pelepasan bengkel', tag: 'biasa', done: true },
+  ];
+
+  function loadTasks() {
+    const stored = localStorage.getItem(TASK_KEY);
+    if (!stored) { set(TASK_KEY, SAMPLE_TASKS); return SAMPLE_TASKS; }
+    return get(TASK_KEY, []);
+  }
+
+  function saveTasks(tasks) { set(TASK_KEY, tasks); }
+
+  function tagLabel(tag) {
+    if (tag === 'penting') return '<span class="task-tag tag-penting">Penting</span>';
+    if (tag === 'sedang')  return '<span class="task-tag tag-sedang">Sedang</span>';
+    return '<span class="task-tag tag-biasa">Biasa</span>';
+  }
+
+  function renderTasks() {
+    const tasks = loadTasks();
+    const list = document.getElementById('task-list');
+    const done = tasks.filter(t => t.done).length;
+    const total = tasks.length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('task-progress-fill').style.width = pct + '%';
+    document.getElementById('task-progress-label').textContent = done + ' / ' + total + ' selesai';
+
+    // Update stat card
+    const berbaki = total - done;
+    document.getElementById('val-tugasan').textContent = berbaki;
+    document.getElementById('sub-tugasan').textContent = done + ' daripada ' + total + ' selesai';
+
+    if (total === 0) {
+      list.innerHTML = '<div class="empty">Tiada tugasan. Tambah tugasan baru di atas.</div>';
+      return;
+    }
+
+    list.innerHTML = tasks.map((t, i) => `
+      <div class="task-item">
+        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" />
+        <span class="task-label ${t.done ? 'done' : ''}">${esc(t.text)}</span>
+        ${tagLabel(t.tag)}
+        <button class="btn-sm" onclick="deleteTask(${i})" title="Padam">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const tasks = loadTasks();
+    tasks.push({ id: Date.now(), text, tag: 'biasa', done: false });
+    saveTasks(tasks);
+    input.value = '';
+    renderTasks();
+  }
+
+  function toggleTask(i) {
+    const tasks = loadTasks();
+    tasks[i].done = !tasks[i].done;
+    saveTasks(tasks);
+    renderTasks();
+    updateBengkelStat();
+  }
+
+  function deleteTask(i) {
+    const tasks = loadTasks();
+    tasks.splice(i, 1);
+    saveTasks(tasks);
+    renderTasks();
+  }
+
+  document.getElementById('task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  /* ═══════════════════════════════════════
+     STATUS BENGKEL
+  ═══════════════════════════════════════ */
+  const BENGKEL_DATA = [
+    { nama: 'Bengkel Automotif',          kapasiti: 24, status: 'aktif' },
+    { nama: 'Bengkel Elektrik & Elektronik', kapasiti: 20, status: 'aktif' },
+    { nama: 'Bengkel Kimpalan',           kapasiti: 18, status: 'penuh' },
+    { nama: 'Bengkel Penyejukan & Penyamanan Udara', kapasiti: 16, status: 'aktif' },
+    { nama: 'Makmal Komputer',            kapasiti: 30, status: 'selenggara' },
+    { nama: 'Bengkel Pembinaan',          kapasiti: 22, status: 'tutup' },
+  ];
+
+  const badgeMap = {
+    aktif:       { cls: 'badge-aktif',      label: 'Aktif' },
+    penuh:       { cls: 'badge-penuh',      label: 'Penuh' },
+    selenggara:  { cls: 'badge-selenggara', label: 'Selenggara' },
+    tutup:       { cls: 'badge-tutup',      label: 'Tutup' },
+  };
+
+  function renderBengkel() {
+    const list = document.getElementById('ws-list');
+    const aktif = BENGKEL_DATA.filter(w => w.status === 'aktif').length;
+    const total = BENGKEL_DATA.length;
+
+    document.getElementById('val-bengkel').textContent = aktif + ' / ' + total;
+    document.getElementById('sub-bengkel').textContent =
+      BENGKEL_DATA.filter(w => w.status === 'penuh').length + ' penuh · ' +
+      BENGKEL_DATA.filter(w => w.status === 'selenggara').length + ' selenggara';
+
+    list.innerHTML = BENGKEL_DATA.map(w => {
+      const b = badgeMap[w.status] || badgeMap.tutup;
+      return `
+        <div class="ws-item">
+          <div class="ws-left">
+            <div class="ws-name">${esc(w.nama)}</div>
+            <div class="ws-meta">Kapasiti: ${w.kapasiti} pelajar</div>
+          </div>
+          <span class="ws-badge ${b.cls}">${b.label}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateBengkelStat() {
+    // called after task changes to keep stat cards in sync
+    renderTasks();
+  }
+
+  /* ═══════════════════════════════════════
+     SENARAI SEMAK PERSEDIAAN
+  ═══════════════════════════════════════ */
+  const CHECK_KEY = 'mytvet_checklist';
+
+  const CHECKLIST_DATA = {
+    1: [
+      'Agihkan tajuk / topik kerja amali kepada semua pelajar',
+      'Pastikan bengkel dan peralatan telah dijadualkan',
+      'Senarai bahan & peralatan disahkan sedia',
+      'Borang penilaian kerja amali dicetak dan disediakan',
+    ],
+    2: [
+      'Taklimat keselamatan bengkel dijalankan',
+      'Pelajar memulakan kerja amali (rekod tarikh mula)',
+      'Pemantauan kemajuan minggu pertengahan dilakukan',
+      'Maklum balas pertengahan diberikan kepada pelajar',
+      'Kehadiran pelajar direkodkan setiap sesi',
+    ],
+    3: [
+      'Semua penghantaran kerja amali diterima dan disahkan',
+      'Penilaian / marking dilengkapkan',
+      'Markah dimasukkan ke dalam sistem',
+      'Pelajar yang gagal dimaklumkan & sesi semak semula dijadualkan',
+      'Laporan ringkasan sesi disediakan untuk pengurusan',
+      'Maklum balas pelajar dikumpul',
+    ],
+  };
+
+  function loadChecks() {
+    const stored = localStorage.getItem(CHECK_KEY);
+    if (stored) return get(CHECK_KEY, {});
+    // Build default from CHECKLIST_DATA — all unchecked
+    const init = {};
+    for (const phase of [1, 2, 3]) {
+      CHECKLIST_DATA[phase].forEach((_, i) => {
+        init[phase + '_' + i] = false;
+      });
+    }
+    set(CHECK_KEY, init);
+    return init;
+  }
+
+  function toggleCheck(phase, idx) {
+    const checks = loadChecks();
+    const key = phase + '_' + idx;
+    checks[key] = !checks[key];
+    set(CHECK_KEY, checks);
+    renderChecklist();
+  }
+
+  function renderChecklist() {
+    const checks = loadChecks();
+    let totalAll = 0, doneAll = 0;
+
+    for (const phase of [1, 2, 3]) {
+      const container = document.getElementById('check-list-' + phase);
+      const items = CHECKLIST_DATA[phase];
+      totalAll += items.length;
+
+      container.innerHTML = items.map((text, i) => {
+        const key = phase + '_' + i;
+        const checked = !!checks[key];
+        if (checked) doneAll++;
+        return `
+          <div class="check-item">
+            <input type="checkbox" id="chk-${phase}-${i}" ${checked ? 'checked' : ''}
+              onchange="toggleCheck(${phase}, ${i})" />
+            <label class="check-label ${checked ? 'done' : ''}" for="chk-${phase}-${i}">${esc(text)}</label>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const pct = totalAll ? Math.round((doneAll / totalAll) * 100) : 0;
+    document.getElementById('check-progress-fill').style.width = pct + '%';
+    document.getElementById('check-progress-label').textContent = doneAll + ' / ' + totalAll + ' langkah selesai (' + pct + '%)';
+  }
+
+  /* ── Init ── */
+  renderTasks();
+  renderBengkel();
+  renderChecklist();
+</script>
+</body>
+</html>
